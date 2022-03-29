@@ -13,7 +13,7 @@ INSERT INTO Person (FirstName, LastName)
 VALUES ("Hello", "World");
 
 CREATE TABLE Books (
-    bookid int,
+    BookId int,
     BookName TEXT(100),
-    BookUrl TEXT(2048),
+    BookUrl TEXT(2048)
 );

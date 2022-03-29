@@ -13,7 +13,7 @@ import (
 var err error
 
 func main() {
-	database.Db, err = sqlx.Connect("mysql", "root:golangtraining@(45.79.120.180:3306)/sagar")
+	database.Db, err = sqlx.Connect("mysql", "root:@(localhost:3306)/trial")
 	if err != nil {
 		log.Println(err)
 	}
