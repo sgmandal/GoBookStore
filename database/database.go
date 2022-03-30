@@ -33,7 +33,8 @@ CREATE TABLE Books (
 	AuthorID int,
 	PublisherID int,
     BookName TEXT(100),
-    BookUrl TEXT(2048)
+    BookUrl TEXT(2048),
+	IsDeleted int
 );
 `,
 	`CREATE TABLE Publisher (
@@ -42,12 +43,21 @@ CREATE TABLE Books (
     PublisherAddress TEXT(255)
 );
 `,
+	`
+CREATE TABLE Inventory (
+	BookId int,
+    NoOfBooks int,
+    AddedBy TEXT(255),
+	IsDeleted int
+);
+`,
 }
 
 var deleteschema = []string{
 	`DROP TABLE Author;`,
 	`DROP TABLE Books;`,
-	`DROP TABLE Publisher`,
+	`DROP TABLE Publisher;`,
+	`DROP TABLE Inventory;`,
 }
 
 // var err error
@@ -69,36 +79,39 @@ func SeedData() {
 func Populate() {
 	// temporary data insertion
 	Books := []models.Book{
-		models.Book{
+		{
 			Book_id:     1,
 			AuthorID:    1,
 			PublisherID: 1,
 			Book_Name:   "The Alchemist",
 			Book_Url:    "https://www.facebook.com",
+			IsDeleted:   0,
 		},
-		models.Book{
+		{
 			Book_id:     2,
 			AuthorID:    2,
 			PublisherID: 1,
 			Book_Name:   "A Brief History of TIme",
 			Book_Url:    "https://en.wikipedia.org/wiki/A_Brief_History_of_Time",
+			IsDeleted:   0,
 		},
-		models.Book{
+		{
 			Book_id:     3,
 			AuthorID:    1,
 			PublisherID: 1,
 			Book_Name:   "Eleven Minutes",
 			Book_Url:    "https://en.wikipedia.org/wiki/Eleven_Minutes",
+			IsDeleted:   0,
 		},
 	}
 
 	Authors := []models.Author{
-		models.Author{
+		{
 			AuthorId:   1,
 			AuthorName: "Paulo Coelho",
 			AuthorAge:  50,
 		},
-		models.Author{
+		{
 			AuthorId:   2,
 			AuthorName: "Stephen Hawking",
 			AuthorAge:  76,
@@ -106,15 +119,23 @@ func Populate() {
 	}
 
 	PublisherAddress := []models.Publisher{
-		models.Publisher{
+		{
 			PublisherID:      1,
 			PublisherName:    "Oxford",
 			PublisherAddress: "Oxford, United Kingdom",
 		},
 	}
 
+	Inventorys := []models.Inventory{
+		{
+			BookId:    2,
+			NoOfBooks: 10,
+			AddedBy:   "Sudhakar",
+			IsDeleted: 0,
+		},
+	}
 	for _, book := range Books {
-		_, err := Db.NamedExec(`INSERT INTO Books (BookId,AuthorID,PublisherID,BookName,BookUrl) VALUES (:BookId,:AuthorID,:PublisherID,:BookName,:BookUrl);`, &book)
+		_, err := Db.NamedExec(`INSERT INTO Books (BookId,AuthorID,PublisherID,BookName,BookUrl,IsDeleted) VALUES (:BookId,:AuthorID,:PublisherID,:BookName,:BookUrl,:IsDeleted);`, &book)
 		if err != nil {
 			fmt.Println("updating books")
 			log.Println(err)
@@ -133,6 +154,14 @@ func Populate() {
 		_, err := Db.NamedExec(`INSERT INTO Publisher (PublisherID,PublisherName,PublisherAddress) VALUES (:PublisherID,:PublisherName,:PublisherAddress);`, &publisher)
 		if err != nil {
 			fmt.Println("updating publisher")
+			log.Println(err)
+			return
+		}
+	}
+	for _, publisher := range Inventorys {
+		_, err := Db.NamedExec(`INSERT INTO Inventory (BookId,NoOfBooks,AddedBy,IsDeleted) VALUES (:BookId,:NoOfBooks,:AddedBy,:IsDeleted);`, &publisher)
+		if err != nil {
+			fmt.Println("updating Inventory")
 			log.Println(err)
 			return
 		}
@@ -203,5 +232,13 @@ func Populate() {
 	// 	fmt.Println(err)
 	// 	return
 	// }
-
+	var bookid int = 2
+	var NoOfBooks []uint8
+	err = Db.Select(&NoOfBooks, `SELECT NoOfBooks FROM inventory
+	WHERE BookId=?;`, bookid)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(NoOfBooks)
 }
